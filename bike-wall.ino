@@ -31,10 +31,9 @@ MAX7219_Dot_Matrix displays[] = {display1, display2, display3, display4, display
 
 #define BLUE_BIKE_PIN A1
 
-#define MAX_ENERGY 20
 
-float RED_BIKE_MAGIC  = 8;
-float BLUE_BIKE_MAGIC  = 8;
+float RED_BIKE_MAGIC  = 3.5;
+float BLUE_BIKE_MAGIC  = 3.5;
 
 float GAIN = 8.5;
 
@@ -85,6 +84,12 @@ int tokens = 0;
 
 unsigned long last_counter = 0;
 unsigned long some_time = 0;
+
+unsigned long last_red = 0;
+unsigned long last_blue = 0;
+
+
+int MAX_ENERGY  = 200;
 
 bool changed = false;
 
@@ -257,8 +262,9 @@ void readRedBike() {
   red_average = red_total / numReadings; //Smoothing algorithm (http://www.arduino.cc/en/Tutorial/Smoothing)
   int val = map(int(red_average), 200, 500, 12, 24);
   red_power = constrain(val, 0, 50) * RED_BIKE_MAGIC;
-  if (red_power > 6 && red_average > 30) {
-    red_energy += (red_power * 0.01);
+  if (red_power > 40 && red_average > 30) {
+    red_energy += (red_power * (millis() - last_red) / 1000 );
+    last_red = millis();  
     red_val = map(int(red_energy), 0, MAX_ENERGY, 0, NUM_LEDS_PER_STRIP);
     if (red_energy > MAX_ENERGY) {
       incTokens();
@@ -294,8 +300,9 @@ void readBlueBike() {
 
   int val = map(int(blue_average), 200, 500, 12, 24);
   blue_power = constrain(val, 0, 50) * BLUE_BIKE_MAGIC;
-  if (blue_power > 6 && blue_average > 30) {
-    blue_energy += (blue_power * 0.01);
+  if (blue_power > 40 && blue_average > 30) {
+    blue_energy += (blue_power *  (millis() - last_blue) / 1000);
+    last_blue = millis();
     blue_val = map(int(blue_energy), 0, MAX_ENERGY, 0, NUM_LEDS_PER_STRIP);
 
     //    Serial.print("BLUE\t");
@@ -365,16 +372,16 @@ void run() {
     stripBlue(blue_val);
     FastLED.show();
 
-    int energy = int(total_energy + blue_energy + red_energy) * GAIN;
+    int energy = int(total_energy + blue_energy + red_energy);
     displayNumber(3, energy);
 
     int power = int( (red_power + blue_power) ); //* 10);
     displayNumber(1, power);
 
-    int calories = energy / 80;
+    int calories = energy / 488;
     displayNumber(0, calories);
 
-    int light = energy / 9;
+    int light = energy / 9 / 60;
     displayNumber(4, light);
 
     int aircon = energy / 3500;
@@ -455,6 +462,7 @@ void loop() {
 
     case WAITING:
       tokens = 0;
+      total_energy = 0;
       is_ready = false;
       FastLED.clear();
       FastLED.show();
@@ -472,11 +480,15 @@ void loop() {
 
       Serial.println("get_ready");
       count_down();
+      clear_leds();
       state = RUNNING;
       red_energy = 0;
       red_total = 0;
       blue_energy = 0;
       blue_total = 0;
+      total_energy = 0;
+      red_val = 0;
+      blue_val = 0;
       tokens = 0;
       index = 0;
       for (int i = 0; i < numReadings; i++) {
@@ -485,6 +497,9 @@ void loop() {
       }
       counter = 60;
       last_counter = 0;
+      last_red = millis();
+      last_blue = millis();
+ 
       Serial.println("t:0");
       break;
 
