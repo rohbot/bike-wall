@@ -99,40 +99,10 @@ void clear_leds() {
   LEDS.show();
   //Serial.println("Waiting");
 }
-
-
-void setup() {
-  Serial.begin(9600);
-  // Serial.setTimeout(100);
-  for (int i = 0; i < NUM_DISPLAYS; i++) {
-    displays[i].begin ();
-    displays[i].setIntensity (15);
-
-  }
-
-  pinMode(LED_PIN, OUTPUT);
-  FastLED.addLeds<WS2812, 5>(leds, 0, NUM_LEDS_PER_STRIP);
-
-  // tell FastLED there's 60 NEOPIXEL leds on pin 11, starting at index 60 in the led array
-  FastLED.addLeds<WS2812, 7>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
-  LEDS.setBrightness(84);
-  last_touch = millis();
-  clear_leds();
-  for (int i = 0; i < numReadings; i++) {
-    red_readings[i] = 0;
-    blue_readings[i] = 0;
-  }
-  testDisplays();
-  delay(1000);
-
-  //Serial.print("Total:\t");
-  //Serial.println(total_energy);
-  clearDisplays();
-
-  // displayInit();
-  //Serial.println("here");
-  Serial.println("F Arduino Connected!");
-
+void incTokens() {
+  tokens++;
+  Serial.print("t:");
+  Serial.println(tokens);
 }
 
 
@@ -141,8 +111,7 @@ void displayNumber(int display_num, int v) {
   char tens;
   char hundreds;
   char thou;
-  char buff[4];
-
+  
   int offset = 0; //display_num * 4;
 
   ones = (char) (v % 10) + 48;
@@ -188,6 +157,11 @@ void displayNumber(int display_num, int v) {
 
 
 }
+
+void showCounter() {
+  displayNumber(2, counter);
+}
+
 
 void testDisplays() {
   for (int i = 0 ; i < NUM_DISPLAYS; i++) {
@@ -327,15 +301,6 @@ void readBlueBike() {
 
 }
 
-void incTokens() {
-  tokens++;
-  Serial.print("t:");
-  Serial.println(tokens);
-}
-
-void showCounter() {
-  displayNumber(2, counter);
-}
 
 void run() {
   changed = false;
@@ -454,6 +419,41 @@ void test_mode() {
 
 
 }
+
+void setup() {
+  Serial.begin(9600);
+  // Serial.setTimeout(100);
+  for (int i = 0; i < NUM_DISPLAYS; i++) {
+    displays[i].begin ();
+    displays[i].setIntensity (15);
+
+  }
+
+  pinMode(LED_PIN, OUTPUT);
+  FastLED.addLeds<WS2812, 5>(leds, 0, NUM_LEDS_PER_STRIP);
+
+  // tell FastLED there's 60 NEOPIXEL leds on pin 11, starting at index 60 in the led array
+  FastLED.addLeds<WS2812, 7>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
+  LEDS.setBrightness(84);
+  last_touch = millis();
+  clear_leds();
+  for (int i = 0; i < numReadings; i++) {
+    red_readings[i] = 0;
+    blue_readings[i] = 0;
+  }
+  testDisplays();
+  delay(1000);
+
+  //Serial.print("Total:\t");
+  //Serial.println(total_energy);
+  clearDisplays();
+
+  // displayInit();
+  //Serial.println("here");
+  Serial.println("F Arduino Connected!");
+
+}
+
 
 void loop() {
 
