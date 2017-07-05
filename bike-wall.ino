@@ -31,6 +31,8 @@ MAX7219_Dot_Matrix displays[] = {display1, display2, display3, display4, display
 
 #define BLUE_BIKE_PIN A1
 
+int MAX_ENERGY  = 600;
+
 
 float RED_BIKE_MAGIC  = 3.5;
 float BLUE_BIKE_MAGIC  = 3.5;
@@ -89,7 +91,6 @@ unsigned long last_red = 0;
 unsigned long last_blue = 0;
 
 
-int MAX_ENERGY  = 200;
 
 bool changed = false;
 
@@ -182,7 +183,7 @@ void clearDisplays() {
     displays[i].sendString ("    ");
   }
   delay(10);
-  some_time = millis();
+  
 
 }
 
@@ -320,6 +321,7 @@ void run() {
       Serial.println("Finished!");
       // Serial.print("t:");
       // Serial.println(tokens);
+      some_time = millis();
       displays[2].sendString(" ");
     }
     else {
@@ -346,7 +348,7 @@ void run() {
     int calories = energy / 488;
     displayNumber(0, calories);
 
-    int light = energy / 9 / 60;
+    int light = energy / 9 / 45;
     displayNumber(4, light);
 
     int aircon = energy / 3500;
@@ -374,8 +376,8 @@ void show_results() {
       is_ready = true;
 
       state = WAITING;
-      clear_leds();
       clearDisplays();
+
 
 
     } else {
@@ -385,6 +387,11 @@ void show_results() {
 
   }
 
+  // if(millis() - some_time > 300000){
+  //   state = WAITING;
+  //   clearDisplays();
+
+  // }
 
 }
 
@@ -464,8 +471,8 @@ void loop() {
       tokens = 0;
       total_energy = 0;
       is_ready = false;
-      FastLED.clear();
-      FastLED.show();
+      clear_leds();
+
 
       check_waiting();
 
